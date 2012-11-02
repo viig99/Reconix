@@ -6,8 +6,8 @@ class User():
 		self.num_of_movies = 3952
 		self.num_of_users = 6040
 		self.num_of_features = 16
-		self.lambda_value = 10
-		self.MAX_ITERS = 100
+		self.lambda_value = 5
+		self.MAX_ITERS = 10
 		self.Y = asmatrix(zeros((self.num_of_movies,self.num_of_users)))
 		self.loadRatingsFileToArray('ml-1m/ratings.dat')
 		self.R = (self.Y != 0).astype(int)
@@ -22,9 +22,7 @@ class User():
 		f.close()
 	def costFunction(self,params):
 		self.callback(params)
-		J = (1/2 * sum(multiply(power(self.X.dot(transpose(self.Theta)) - self.Y,2),self.R))) + ( (self.lambda_value/2)* (sum(power(self.Theta,2)) + sum(power(self.X,2))))
-		print(J)
-		return J
+		return (1/2 * sum(multiply(power(self.X.dot(transpose(self.Theta)) - self.Y,2),self.R))) + ( (self.lambda_value/2)* (sum(power(self.Theta,2)) + sum(power(self.X,2))))
 	def costFunctionGrad(self,params):
 		self.callback(params)
 		X_grad = (multiply(self.X.dot(transpose(self.Theta)) - self.Y,self.R).dot(self.Theta)) + (self.lambda_value * self.X)
@@ -50,10 +48,11 @@ class User():
 			f=lambda x: self.costFunction(x),
 			x0=hstack([self.X.flatten(),self.Theta.flatten()]),
 			fprime=lambda x: self.costFunctionGrad(x),
-			disp=0,
-			maxiter=self.MAX_ITERS
+			disp=True,
+			maxiter=self.MAX_ITERS,
+			retall=True
 		)
-		param_opts = vsplit(Param_opt,(0,self.num_of_movies*self.num_of_features))
+		param_opts = hsplit(Param_opt,(0,self.num_of_movies*self.num_of_features))
 		X_opt = reshape(param_opts[1],(self.num_of_movies,self.num_of_features))
 		Theta_opt = reshape(param_opts[2],(self.num_of_users,self.num_of_features))
 		predict = X_opt.dot(transpose(Theta_opt))
