@@ -7,7 +7,7 @@ class User():
 		self.num_of_users = 6040
 		self.num_of_features = 16
 		self.lambda_value = 10
-		self.MAX_ITERS = 1000
+		self.MAX_ITERS = 100
 		self.Y = asmatrix(zeros((self.num_of_movies,self.num_of_users)))
 		self.loadRatingsFileToArray('ml-1m/ratings.dat')
 		self.R = (self.Y != 0).astype(int)
@@ -22,12 +22,14 @@ class User():
 		f.close()
 	def costFunction(self,params):
 		self.callback(params)
-		return (1/2 * sum(multiply(power(self.X.dot(transpose(self.Theta)) - self.Y,2),self.R))) + ( (self.lambda_value/2)* (sum(power(self.Theta,2)) + sum(power(self.X,2))))
+		J = (1/2 * sum(multiply(power(self.X.dot(transpose(self.Theta)) - self.Y,2),self.R))) + ( (self.lambda_value/2)* (sum(power(self.Theta,2)) + sum(power(self.X,2))))
+		print(J)
+		return J
 	def costFunctionGrad(self,params):
 		self.callback(params)
 		X_grad = (multiply(self.X.dot(transpose(self.Theta)) - self.Y,self.R).dot(self.Theta)) + (self.lambda_value * self.X)
 		Theta_grad = (transpose(multiply(self.X.dot(transpose(self.Theta)) - self.Y,self.R)).dot(self.X)) + (self.lambda_value * self.Theta)
-		return hstack([X_grad.flatten(),Theta_grad.flatten()])
+		return ravel(vstack((X_grad,Theta_grad)))
 	def normalizeY(self):
 		m,n = shape(self.Y)
 		Y_mean = asmatrix(zeros((m, 1)))
@@ -45,9 +47,9 @@ class User():
 	def predict_movie(self):
 		self.normalizeY()
 		(Param_opt,fopt,func_calls) = optimize.fmin_cg(
-			f=self.costFunction,
+			f=lambda x: self.costFunction(x),
 			x0=hstack([self.X.flatten(),self.Theta.flatten()]),
-			fprime=self.costFunctionGrad,
+			fprime=lambda x: self.costFunctionGrad(x),
 			disp=0,
 			maxiter=self.MAX_ITERS
 		)
@@ -55,6 +57,6 @@ class User():
 		X_opt = reshape(param_opts[1],(self.num_of_movies,self.num_of_features))
 		Theta_opt = reshape(param_opts[2],(self.num_of_users,self.num_of_features))
 		predict = X_opt.dot(transpose(Theta_opt))
-		self.predict = sum(predict,self.Y_mean)
+		self.predict = predict + self.Y_mean
 u = User()
 print(u.predict[593,0])
