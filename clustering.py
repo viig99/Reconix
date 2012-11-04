@@ -61,9 +61,11 @@ class User():
 			Theta_opt = reshape(param_opts[2],(self.num_of_users,self.num_of_features))
 			predict = X_opt.dot(transpose(Theta_opt))
 			self.predict = predict + self.Y_mean
-			io.savemat('predict.mat',{'predict':self.predict})
+			io.savemat('predict.mat',{'predict':self.predict,'Y':self.Y})
 		else:
 			mat_contents = io.loadmat('predict.mat')
 			self.predict = mat_contents['predict']
+			self.R_not = logical_not(self.R).astype(int)
+			self.predict_others = multiply(self.predict,self.R_not)
 u = User()
 print(u.predict[241,195])
