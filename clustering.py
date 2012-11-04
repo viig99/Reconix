@@ -38,9 +38,9 @@ class User():
 		for i in range(m):
 			idx = self.R[i,:].nonzero()[1]
 			Y_mean[i] = mean(self.Y[i,idx])
-			Y_norm[i,idx] = Y_norm[i,idx] - Y_mean[i,0]
+			Y_norm[i,idx] = self.Y[i,idx] - Y_mean[i,0]
 		self.Y_mean = Y_mean
-		self.Y = self.Y - Y_mean
+		self.Y = Y_norm
 	def callback(self,params):
 		params_split = hsplit(params,(0,self.num_of_movies*self.num_of_features))
 		self.X = reshape(params_split[1],(self.num_of_movies,self.num_of_features))
